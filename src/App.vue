@@ -32,7 +32,6 @@
         res = res.body;
         if (res.code === ERR_OK) {
           this.seller = res.data;
-          console.log(this.seller);
         }
       });
     },
