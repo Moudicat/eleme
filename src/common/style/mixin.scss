@@ -1,0 +1,17 @@
+/**
+ * Created by Moudi on 2017/3/5.
+ */
+
+//解决1px边框问题
+@mixin border-1px($color) {
+  position: relative;
+  &:after {
+    content: ' ';
+    display: block;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    border-top: 1px solid $color;
+  }
+}
