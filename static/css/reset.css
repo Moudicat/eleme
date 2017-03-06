@@ -54,7 +54,9 @@ input, button, select, textarea {
 legend {
   border: 0;
 }
-
+.clearfix {
+  zoom: 1;
+}
 .clearfix:after {
   content: "";
   display: block;
@@ -64,6 +66,4 @@ legend {
   visibility: hidden;
 }
 
-.clearfix {
-  zoom: 1;
-}
+
