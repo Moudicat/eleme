@@ -10,6 +10,7 @@
     "lint": "eslint --ext .js,.vue src"
   },
   "dependencies": {
+    "better-scroll": "^0.1.15",
     "css-loader": "^0.26.2",
     "node-sass": "^4.5.0",
     "sass-loader": "^6.0.2",

@@ -1,17 +1,17 @@
 <template>
   <div class="goods">
-    <div class="menu-wrapper">
+    <div class="menu-wrapper" ref="menuwrapper">
       <ul>
-        <li v-for="item in goods" class="menu-item">
+        <li v-for="(item, index) in goods" @click="selectMenu(index, $event)" class="menu-item" :class="{'current':currentIndex===index}">
           <span class="text border-1px">
             <i v-show="item.type>0" class="icon" :class="classMap[item.type]"></i>{{item.name}}
           </span>
         </li>
       </ul>
     </div>
-    <div class="foods-wrapper">
+    <div class="foods-wrapper" ref="foodswrapper">
       <ul>
-        <li v-for="item in goods" class="food-list">
+        <li v-for="item in goods" class="food-list" ref="foodlist">
           <h2 class="title">{{item.name}}</h2>
           <ul>
             <li v-for="food in item.foods" class="food-item border-1px">
@@ -22,8 +22,7 @@
                 <h2 class="name">{{food.name}}</h2>
                 <p class="desc">{{food.description}}</p>
                 <div class="extra">
-                  <span class="count">月售{{food.sellCount}}份</span>
-                  <span>好评率{{food.rating}}</span>
+                  <span class="count">月售{{food.sellCount}}份</span><span>好评率{{food.rating}}</span>
                 </div>
                 <div class="price">
                   <span class="now">￥{{food.price}}</span>
@@ -35,22 +34,39 @@
         </li>
       </ul>
     </div>
+    <shopcart :delivery-price="seller.deliveryPrice" :min-price="seller.minPrice"></shopcart>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
+  import BScroll from 'better-scroll';
+  import shopcart from '../shopcart/shopcart';
   const ERR_OK = 0;
 
   export default {
-    prop: {
+    props: {
       seller: {
         type: Object
       }
     },
     data() {
       return {
-        goods: []
+        goods: [],
+        listHeight: [],
+        scrollY: 0
       };
+    },
+    computed: {
+      currentIndex() {
+        for (let i = 0; i < this.listHeight.length; i++) {
+          let h1 = this.listHeight[i];
+          let h2 = this.listHeight[i + 1];
+          if (!h2 || (this.scrollY >= h1 && this.scrollY < h2)) {
+            return i;
+          }
+        }
+        return 0;
+      }
     },
     created() {
       this.classMap = ['decrease', 'discount', 'special', 'invoice', 'guarantee'];
@@ -58,8 +74,49 @@
         res = res.body;
         if (res.code === ERR_OK) {
           this.goods = res.data;
+          this.$nextTick(() => {
+            // 初始化滚动
+            this._initScroll();
+            // 计算物品分类的高度
+            this._calculateHeight();
+          });
         }
       });
+    },
+    methods: {
+      selectMenu(index, event) {
+        // 默认事件阻止，防止pc端出现两次点击
+        if (!event._constructed) {
+          return;
+        }
+        let foodList = this.$refs.foodlist;
+        let el = foodList[index];
+        this.foodsScroll.scrollToElement(el, 300);
+      },
+      _initScroll() {
+        this.menuScroll = new BScroll(this.$refs.menuwrapper, {
+          click: true
+        });
+        this.foodsScroll = new BScroll(this.$refs.foodswrapper, {
+          probeType: 3
+        });
+        this.foodsScroll.on('scroll', (pos) => {
+          this.scrollY = Math.abs(Math.round(pos.y));
+        });
+      },
+      _calculateHeight() {
+        let foodList = this.$refs.foodlist;
+        let height = 0;
+        this.listHeight.push(height);
+        for (let i = 0; i < foodList.length; i++) {
+          let item = foodList[i];
+          height += item.clientHeight;
+          this.listHeight.push(height);
+        }
+      }
+    },
+    components: {
+      shopcart
     }
   };
 </script>
@@ -85,6 +142,18 @@
         line-height: 14px;
         padding: 0 12px;
         text-align: center;
+        &.current {
+          position: relative;
+          z-index: 5;
+          margin-top: -1px;
+          background: #fff;
+          font-weight: 700;
+          .text {
+            &::after {
+              border-top: 0;
+            }
+          }
+        }
         .icon {
           display: inline-block;
           vertical-align: top;
@@ -159,11 +228,12 @@
             font-size: 10px;
             color: rgb(147, 153, 159);
           }
-          .extra {
+          .desc {
             margin-bottom: 8px;
+            line-height: 12px;
           }
           .extra {
-            &.count {
+            .count {
               margin-right: 12px;
             }
           }
@@ -176,7 +246,7 @@
               color: rgb(240, 20, 20);
             }
             .old {
-              text-decoration-line: line-through;
+              text-decoration: line-through;
               font-size: 10px;
               color: rgb(147, 153, 159);
             }
