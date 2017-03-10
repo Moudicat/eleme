@@ -17,6 +17,15 @@
         </div>
       </div>
     </div>
+    <div class="ball-container">
+      <div v-for="ball in balls">
+        <transition name="drop" @before-enter="beforeDrop" @enter="dropping" @after-enter="afterDrop">
+          <div class="ball" v-show="ball.show">
+            <div class="inner inner-hook"></div>
+          </div>
+        </transition>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -42,6 +51,28 @@
         type: Number,
         default: 0
       }
+    },
+    data() {
+      return {
+        balls: [
+          {
+            show: false
+          },
+          {
+            show: false
+          },
+          {
+            show: false
+          },
+          {
+            show: false
+          },
+          {
+            show: false
+          }
+        ],
+        dropBalls: []
+      };
     },
     computed: {
       totalPrice() {
@@ -72,6 +103,55 @@
           return 'not-enough';
         } else {
           return 'enough';
+        }
+      }
+    },
+    methods: {
+      drop(target) {
+        for (let i = 0; i < this.balls.length; i++) {
+          let ball = this.balls[i];
+          if (!ball.show) {
+            ball.show = true;
+            ball.target = target;
+            this.dropBalls.push(ball);
+            return;
+          }
+        }
+      },
+      beforeDrop(target) {
+        let count = this.balls.length;
+        while (count--) {
+          let ball = this.balls[count];
+          if (ball.show) {
+            let rect = ball.target.getBoundingClientRect();
+            let x = rect.left - 32;
+            let y = -(window.innerHeight - rect.top - 22);
+            target.style.display = '';
+            target.style.webkitTransform = `translate3d(0,${y}px,0)`;
+            target.style.transform = `translate3d(0,${y}px,0)`;
+            let inner = target.getElementsByClassName('inner-hook')[0];
+            inner.style.webkitTransform = `translate3d(${x}px,0,0)`;
+            inner.style.transform = `translate3d(${x}px,0,0)`;
+          }
+        }
+      },
+      dropping(target, done) {
+        /* eslint-disable no-unused-vars */
+        let rf = target.offsetHeight; // 手动触发浏览器重绘
+        this.$nextTick(() => {
+          target.style.webkitTransform = 'translate3d(0,0,0)';
+          target.style.transform = 'translate3d(0,0,0)';
+          let inner = target.getElementsByClassName('inner-hook')[0];
+          inner.style.webkitTransform = `translate3d(0,0,0)`;
+          inner.style.transform = `translate3d(0,0,0)`;
+          target.addEventListener('transitionend', done);
+        });
+      },
+      afterDrop(target) {
+        let ball = this.dropBalls.shift();
+        if (ball) {
+          ball.show = false;
+          target.style.display = 'none';
         }
       }
     }
@@ -179,6 +259,22 @@
             background: #00b43c;
             color: #fff;
           }
+        }
+      }
+    }
+    .ball-container {
+      .ball {
+        position: fixed;
+        left: 32px;
+        bottom: 22px;
+        z-index: 200;
+        transition: 0.4s cubic-bezier(0.49, -0.29, 0.75, 0.41);
+        .inner {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: rgb(0, 160, 220);
+          transition: 0.4s linear;
         }
       }
     }
