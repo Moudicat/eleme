@@ -21,7 +21,7 @@ npm run build --report
 For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
 ## 数据流向
 
-[数据流向图](https://moudicat-data.oss-cn-beijing.aliyuncs.com/cdn/2017/04/所有数据.png)
+![数据流向图](https://moudicat-data.oss-cn-beijing.aliyuncs.com/cdn/2017/04/所有数据.png)
 
 ## 总结
 
