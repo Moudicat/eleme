@@ -68,3 +68,87 @@ For detailed explanation on how things work, checkout the [guide](http://vuejs-t
 }
 ```
 通过这两操作，就可以解决1px-border问题了！
+
+> 小球的运动
+
+  在项目中，有个添加购物车的小球运动动画，这里我们就来分析一下。
+ 
+ 首先要实现这个效果就要了解Vue的transition，Vue 在插入、更新或者移除 DOM 时，提供多种不同方式的应用过渡效果。
+ 
+ Vue 提供了 transition 的封装组件，在下列情形中，可以给任何元素和组件添加 entering/leaving 过渡
+ 
+* 条件渲染 （使用 v-if）
+* 条件展示 （使用 v-show）
+* 动态组件
+* 组件根节点
+
+```css
+.fade-enter-active, .fade-leave-active {    // 这里是离开 进入时候的transition
+	transition: opacity .5s
+}
+.fade-enter, .fade-leave-active {  //定义初始状态和结束状态  toggle
+	opacity: 0
+}
+```
+
+会有 4 个(CSS)类名在 enter/leave 的过渡中切换
+
+1. v-enter: 定义进入过渡的开始状态。在元素被插入时生效，在下一个帧移除。
+2. v-enter-active: 定义进入过渡的结束状态。在元素被插入时生效，在 transition/animation 完成之后移除。
+3. v-leave: 定义离开过渡的开始状态。在离开过渡被触发时生效，在下一个帧移除。
+4. v-leave-active: 定义离开过渡的结束状态。在离开过渡被触发时生效，在 transition/animation 完成之后移除。
+
+以下代码是小球的结构，在ball-container中v-for循环数组中的小球。 给每个小球绑上阶段事件。 inner的作用是负责x轴的位移，ball负责y位移。
+
+```html
+<div class="ball-container">
+  <div v-for="ball in balls">
+    <transition name="drop" @before-enter="beforeDrop" @enter="dropping" @after-enter="afterDrop">
+      <div class="ball" v-show="ball.show">
+        <div class="inner inner-hook"></div>
+      </div>
+    </transition>
+  </div>
+</div>
+```
+
+```javascript
+beforeDrop(target) {
+  let count = this.balls.length;
+  while (count--) {
+    let ball = this.balls[count];
+    if (ball.show) {
+      let rect = ball.target.getBoundingClientRect();
+      let x = rect.left - 32;
+      let y = -(window.innerHeight - rect.top - 22);
+      target.style.display = '';
+      target.style.webkitTransform = `translate3d(0,${y}px,0)`;
+      target.style.transform = `translate3d(0,${y}px,0)`;
+      let inner = target.getElementsByClassName('inner-hook')[0];
+      inner.style.webkitTransform = `translate3d(${x}px,0,0)`;
+      inner.style.transform = `translate3d(${x}px,0,0)`;
+    }
+  }
+}
+
+dropping(target, done) {
+  /* eslint-disable no-unused-vars */
+  let rf = target.offsetHeight; // 手动触发浏览器重绘
+  this.$nextTick(() => {
+    target.style.webkitTransform = 'translate3d(0,0,0)';
+    target.style.transform = 'translate3d(0,0,0)';
+    let inner = target.getElementsByClassName('inner-hook')[0];
+    inner.style.webkitTransform = `translate3d(0,0,0)`;
+    inner.style.transform = `translate3d(0,0,0)`;
+    target.addEventListener('transitionend', done);
+  });
+}
+
+afterDrop(target) {
+  let ball = this.dropBalls.shift();
+  if (ball) {
+    ball.show = false;
+    target.style.display = 'none';
+  }
+}
+```
