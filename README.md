@@ -113,6 +113,20 @@ For detailed explanation on how things work, checkout the [guide](http://vuejs-t
 ```
 
 ```javascript
+addFood(target) {
+  this.drop(target);
+}
+drop(target) {
+  for (let i = 0; i < this.balls.length; i++) {
+    let ball = this.balls[i];
+    if (!ball.show) {
+      ball.show = true;
+      ball.target = target;
+      this.dropBalls.push(ball);
+      return;
+    }
+  }
+}
 beforeDrop(target) {
   let count = this.balls.length;
   while (count--) {
@@ -152,3 +166,5 @@ afterDrop(target) {
   }
 }
 ```
+
+通过addFood的点击事件，将绑定有target的球放入数组中，根据条件渲染，ball元素加入DOM，触发transition。 通过读取target，获取到按钮所在的位置，将小球移动到该点，通过transition+cubic-bezier属性模拟小球下落。
