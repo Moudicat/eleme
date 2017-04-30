@@ -12,7 +12,7 @@ body, h1, h2, h3, h4, h5, h6, dl, dd, ul, ol, p, fieldset, legend {
 }
 
 body {
-  font-family: "microsoft yahei";
+  font-family: "microsoft yahei", sans-serif;
 }
 
 ul, ol {
@@ -65,5 +65,3 @@ legend {
   height: 0;
   visibility: hidden;
 }
-
-
